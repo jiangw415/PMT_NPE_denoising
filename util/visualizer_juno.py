@@ -69,6 +69,7 @@ class Visualizer():
         self.win_size = opt.display_winsize
         self.name = opt.name
         self.port = opt.display_port
+        self.show_diff = opt.show_diff
         self.saved = False
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
         #if False:
@@ -166,23 +167,24 @@ class Visualizer():
                 img_path = os.path.join(self.img_dir, 'epoch%.3d_%s.png' % (epoch, label))
                 # util.save_image(image_numpy, img_path)
                 tmp_img = image[0][0].detach().cpu()
-                # mask = tmp_img < 1e-3
-                mask = np.zeros_like(tmp_img)
-                for i in range(tmp_img.shape[0]):
-                    for j in range(tmp_img.shape[1]):
-                        if 1e-3>tmp_img[i][j]:
-                            mask[i][j] = True
+                mask = (tmp_img < 1e-3).numpy()
+                # mask = np.zeros_like(tmp_img)
+                # for i in range(tmp_img.shape[0]):
+                #     for j in range(tmp_img.shape[1]):
+                #         if 1e-3>tmp_img[i][j]:
+                #             mask[i][j] = True
                 sns.heatmap(tmp_img, cmap="YlOrRd", mask=mask, xticklabels=False, yticklabels=False)
                 # sns.heatmap(tmp_img, cmap="YlOrRd", xticklabels=False, yticklabels=False)
                 plt.savefig(img_path)
                 plt.close()
             # save diff 1D histogram
-            diff_mask = visuals['real_A'][0][0].detach().cpu() > 1e-3
-            tmp_1d = ((visuals['fake_B'][0][0].detach().cpu() - visuals['real_B'][0][0].detach().cpu())*diff_mask).flatten()
-            diff_1d = [tmp_1d[i].item() for i in range(len(tmp_1d)) if tmp_1d[i].item()!=0]
-            plt.hist(np.array(diff_1d), range=(-5,5), bins=100)
-            plt.savefig(os.path.join(self.img_dir, 'epoch%.3d_diff1d.png' % (epoch)))
-            plt.close()
+            if self.show_diff == 1:
+                diff_mask = visuals['real_A'][0][0].detach().cpu() > 1e-3
+                tmp_1d = ((visuals['fake_B'][0][0].detach().cpu() - visuals['real_B'][0][0].detach().cpu())*diff_mask).flatten()
+                diff_1d = [tmp_1d[i].item() for i in range(len(tmp_1d)) if tmp_1d[i].item()!=0]
+                plt.hist(np.array(diff_1d), range=(-5,5), bins=100)
+                plt.savefig(os.path.join(self.img_dir, 'epoch%.3d_diff1d.png' % (epoch)))
+                plt.close()
             # update website
             # webpage = html.HTML(self.web_dir, 'Experiment name = %s' % self.name, refresh=1)
             webpage = html.HTML(self.web_dir, 'Experiment name = %s' % self.name, refresh=0)
@@ -196,10 +198,11 @@ class Visualizer():
                     ims.append(img_path)
                     txts.append(label)
                     links.append(img_path)
-                ims.append('epoch%.3d_diff1d.png' % (n))
-                txts.append('diff1d')
-                links.append('epoch%.3d_diff1d.png' % (n))
-                webpage.add_images(ims, txts, links, width=self.win_size)
+                if self.show_diff == 1:
+                    ims.append('epoch%.3d_diff1d.png' % (n))
+                    txts.append('diff1d')
+                    links.append('epoch%.3d_diff1d.png' % (n))
+                    webpage.add_images(ims, txts, links, width=self.win_size)
             webpage.save()
 
     def plot_current_losses(self, epoch, counter_ratio, losses):
