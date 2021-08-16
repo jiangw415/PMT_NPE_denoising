@@ -70,6 +70,8 @@ class Pix2PixGModel(BaseModel):
             self.optimizers.append(self.optimizer_G)
             # self.optimizers.append(self.optimizer_D)
 
+        self.use_mask = opt.use_mask
+
     def set_input(self, input):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
 
@@ -85,8 +87,10 @@ class Pix2PixGModel(BaseModel):
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
-        # self.fake_B = self.netG(self.real_A)  # G(A)
-        self.fake_B = self.netG(self.real_A) * (self.real_A[:,0:1,:,:] > 0.25)
+        if self.use_mask == 0:
+            self.fake_B = self.netG(self.real_A)  # G(A)
+        else:
+            self.fake_B = self.netG(self.real_A) * (self.real_A[:,0:1,:,:] > 0.25)
         # print('input shape: ',end='')
         # print(self.real_A.shape)
         # print('netG output shape: ',end='')

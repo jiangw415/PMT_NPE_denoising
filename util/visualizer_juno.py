@@ -173,7 +173,7 @@ class Visualizer():
                 #     for j in range(tmp_img.shape[1]):
                 #         if 1e-3>tmp_img[i][j]:
                 #             mask[i][j] = True
-                sns.heatmap(tmp_img, cmap="YlOrRd", mask=mask, xticklabels=False, yticklabels=False)
+                sns.heatmap(tmp_img, cmap="YlOrRd", vmin=1, mask=mask, xticklabels=False, yticklabels=False)
                 # sns.heatmap(tmp_img, cmap="YlOrRd", xticklabels=False, yticklabels=False)
                 plt.savefig(img_path)
                 plt.close()
@@ -182,7 +182,7 @@ class Visualizer():
                 diff_mask = visuals['real_A'][0][0].detach().cpu() > 1e-3
                 tmp_1d = ((visuals['fake_B'][0][0].detach().cpu() - visuals['real_B'][0][0].detach().cpu())*diff_mask).flatten()
                 diff_1d = [tmp_1d[i].item() for i in range(len(tmp_1d)) if tmp_1d[i].item()!=0]
-                plt.hist(np.array(diff_1d), range=(-5,5), bins=100)
+                plt.hist(np.array(diff_1d), range=(-0.5,2), bins=250)
                 plt.savefig(os.path.join(self.img_dir, 'epoch%.3d_diff1d.png' % (epoch)))
                 plt.close()
             # update website
