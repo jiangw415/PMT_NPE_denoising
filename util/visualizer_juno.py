@@ -182,7 +182,7 @@ class Visualizer():
                 diff_mask = visuals['real_A'][0][0].detach().cpu() > 1e-3
                 tmp_1d = ((visuals['fake_B'][0][0].detach().cpu() - visuals['real_B'][0][0].detach().cpu())*diff_mask).flatten()
                 diff_1d = [tmp_1d[i].item() for i in range(len(tmp_1d)) if tmp_1d[i].item()!=0]
-                plt.hist(np.array(diff_1d), range=(-0.5,2), bins=250)
+                plt.hist(np.array(diff_1d), range=(-0.1,1.1), bins=240)
                 plt.savefig(os.path.join(self.img_dir, 'epoch%.3d_diff1d.png' % (epoch)))
                 plt.close()
             # update website
